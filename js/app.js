@@ -67,10 +67,12 @@ function toast(msg){
 function togglePanel(id){
   document.getElementById(id).classList.toggle('collapsed');
 }
+const TAB_NAMES = ['briefing', 'overall', 'ships', 'export'];
 function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.getElementById('tab-overall').classList.toggle('active', tab === 'overall');
-  document.getElementById('tab-ships').classList.toggle('active', tab === 'ships');
+  document.querySelectorAll('.bottom-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  TAB_NAMES.forEach(name => {
+    document.getElementById('tab-' + name).classList.toggle('active', name === tab);
+  });
 }
 
 /* ---------------- briefing fields wiring ---------------- */
@@ -370,12 +372,79 @@ function wireImportInput(){
   });
 }
 
+function defaultBriefing(){
+  return {
+    opName:'', opRank:'', missionName:'', shipName:'', fc:'', date: todayISO(), time: nowHHMM(),
+    capName:'', capRank:''
+  };
+}
+
+function newMission(){
+  const ok = window.confirm(
+    'Start a new mission? This clears the current mission briefing and every logged ship and entry.\n\nExport your log first (Export tab) if you want to keep it.'
+  );
+  if(!ok) return;
+  closeShipModal();
+  state.briefing = defaultBriefing();
+  initState();
+  wireBriefingFields();
+  document.getElementById('fcInput').value = '';
+  renderAll();
+  switchTab('briefing');
+  toast('New mission started.');
+}
+
+/* ---------------- intro / instructions modal ---------------- */
+const INTRO_SEEN_KEY = 'ucnCommsLogIntroSeen_v1';
+function openIntro(){
+  document.getElementById('introOverlay').classList.add('open');
+}
+function closeIntro(remember){
+  document.getElementById('introOverlay').classList.remove('open');
+  if(remember){
+    try{ localStorage.setItem(INTRO_SEEN_KEY, '1'); }catch(e){ /* storage unavailable, ignore */ }
+  }
+}
+function maybeShowIntroOnFirstLoad(){
+  let seen = false;
+  try{ seen = !!localStorage.getItem(INTRO_SEEN_KEY); }catch(e){ /* storage unavailable, ignore */ }
+  if(!seen) openIntro();
+}
+
 /* ---------------- init ---------------- */
+function wireStaticControls(){
+  document.querySelectorAll('.bottom-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+  });
+
+  document.getElementById('newShipPanel').addEventListener('click', () => togglePanel('newShipPanelWrap'));
+  document.getElementById('addShipBtn').addEventListener('click', addShip);
+
+  document.getElementById('importJsonBtn').addEventListener('click', importJSON);
+  document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+  document.getElementById('pdfExportBtn').addEventListener('click', () => exportPDF());
+
+  document.getElementById('modalCloseBtn').addEventListener('click', closeShipModal);
+  document.getElementById('shipModalOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'shipModalOverlay') closeShipModal();
+  });
+
+  document.getElementById('newMissionBtn').addEventListener('click', newMission);
+  document.getElementById('helpBtn').addEventListener('click', openIntro);
+  document.getElementById('introCloseBtn').addEventListener('click', () => closeIntro(true));
+  document.getElementById('introGotItBtn').addEventListener('click', () => closeIntro(true));
+  document.getElementById('introOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'introOverlay') closeIntro(true);
+  });
+}
+
 function init(){
   initState();
   wireBriefingFields();
   wireFcCombo();
   wireImportInput();
+  wireStaticControls();
   renderAll();
+  maybeShowIntroOnFirstLoad();
 }
 document.addEventListener('DOMContentLoaded', init);

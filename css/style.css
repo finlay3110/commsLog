@@ -35,7 +35,7 @@ body{
   mix-blend-mode:overlay;
 }
 
-.app{ max-width:1180px; margin:0 auto; padding:22px 18px 60px; }
+.app{ max-width:1180px; margin:0 auto; padding:22px 18px calc(90px + env(safe-area-inset-bottom)); }
 
 /* ---------- TOP BAR ---------- */
 .topbar{
@@ -77,7 +77,13 @@ body{
   margin-right:14px; white-space:nowrap;
 }
 .back-pill:hover{ border-color:var(--orange); color:var(--orange-2); }
-.topbar-right{ display:flex; align-items:center; gap:12px; }
+.topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.icon-btn{
+  width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--navy-2); border:1px solid var(--line); color:var(--text-dim); cursor:pointer; flex-shrink:0;
+}
+.icon-btn:hover{ border-color:var(--orange); color:var(--orange-2); }
+.icon-btn svg{ width:17px; height:17px; }
 
 /* ---------- BRIEFING PANEL ---------- */
 .panel{
@@ -98,6 +104,9 @@ body{
 .panel-body{ padding:16px; }
 .panel.collapsed .panel-body{ display:none; }
 .panel.collapsed .chev{ transform:rotate(-90deg); }
+
+.panel.static .panel-body{ display:block; }
+.panel-head.static{ cursor:default; }
 
 .grid-form{
   display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px 16px;
@@ -128,16 +137,29 @@ body{
 .combo-list .none{ color:var(--text-dim); font-style:italic; cursor:default; }
 .combo-list .none:hover{ background:none; color:var(--text-dim); }
 
-/* ---------- TABS ---------- */
-.tabs{ display:flex; gap:6px; margin-bottom:14px; border-bottom:1px solid var(--line); }
-.tab-btn{
-  font-family:'Orbitron', sans-serif; font-size:11.5px; letter-spacing:1.8px;
-  background:none; border:none; color:var(--text-dim); padding:11px 18px; cursor:pointer;
-  border-bottom:2px solid transparent; text-transform:uppercase;
-}
-.tab-btn.active{ color:var(--orange-2); border-bottom-color:var(--orange); }
+/* ---------- BOTTOM TAB BAR ---------- */
 .tab-panel{ display:none; }
 .tab-panel.active{ display:block; }
+
+.bottom-tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:150;
+  background:linear-gradient(0deg, var(--navy) 0%, var(--navy-2) 100%);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -6px 20px rgba(0,0,0,0.35);
+}
+.bottom-tabbar-inner{
+  max-width:1180px; margin:0 auto; display:flex;
+}
+.bottom-tab-btn{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:none; border:none; color:var(--text-dim); cursor:pointer;
+  padding:9px 4px 8px; font-family:'Exo 2', sans-serif; font-size:10.5px; letter-spacing:0.4px;
+  border-top:2px solid transparent;
+}
+.bottom-tab-btn svg{ width:21px; height:21px; }
+.bottom-tab-btn.active{ color:var(--orange-2); border-top-color:var(--orange); }
+.bottom-tab-btn:active{ opacity:0.7; }
 
 /* ---------- BUTTONS ---------- */
 .btn{
@@ -242,16 +264,30 @@ table.log-table tr:hover td{ background:rgba(255,255,255,0.02); }
 .warspite-block .wr-label{ color:var(--danger); margin-top:0; }
 
 /* footer / export bar */
-.export-bar{
-  display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; align-items:center; margin-top:18px;
-  border-top:1px solid var(--line); padding-top:16px;
+.export-section{
+  border:1px solid var(--line); border-radius:4px; padding:16px;
+  margin-bottom:14px; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
 }
+.export-heading{
+  font-family:'Orbitron', sans-serif; font-size:12.5px; letter-spacing:2px;
+  color:var(--orange-2); text-transform:uppercase; margin:0 0 8px;
+}
+.export-desc{ font-size:12.5px; color:var(--text-dim); line-height:1.55; margin:0 0 14px; }
+.export-btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+.export-btn-row .btn{ flex:1; min-width:150px; }
+
+.intro-modal{ max-width:520px; }
+.intro-list{ margin:0 0 16px; padding-left:20px; font-size:13px; line-height:1.6; color:#dce6f0; }
+.intro-list li{ margin-bottom:10px; }
+.intro-list b{ color:var(--orange-2); }
+
 .footer-note{ text-align:center; color:var(--text-dim); font-size:10.5px; margin-top:26px; letter-spacing:0.5px; }
 .designer-credit{ text-align:center; color:var(--text-dim); font-size:10px; margin-top:6px; letter-spacing:0.5px; }
 
 @media (max-width:640px){
   .brand-text h1{ font-size:15px; letter-spacing:1.5px; }
   .topbar{ flex-direction:column; align-items:flex-start; gap:10px; }
+  .topbar-right{ width:100%; justify-content:flex-start; }
 }
 
 .toast{
