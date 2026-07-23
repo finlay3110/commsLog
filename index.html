@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UCN Comms Log</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">UCN</div>
+      <div class="brand-text">
+        <h1>COMMS LOG</h1>
+        <div class="sub">United Confederation Navy &mdash; Fleet Communications</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a class="back-pill" href="https://toolportal.netlify.app">&larr; Back to Tool Portal</a>
+      <div class="classified-tag">CLASSIFIED</div>
+    </div>
+  </div>
+
+  <div class="panel" id="briefingPanel">
+    <div class="panel-head" onclick="togglePanel('briefingPanel')">
+      <h2>Mission Briefing</h2>
+      <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="grid-form">
+        <div class="field">
+          <label>Comms Operative Name</label>
+          <input type="text" id="opName" placeholder="e.g. Ellis Swain">
+        </div>
+        <div class="field">
+          <label>Operative Rank</label>
+          <input type="text" id="opRank" placeholder="e.g. Ensign">
+        </div>
+        <div class="field">
+          <label>Mission Name</label>
+          <input type="text" id="missionName" placeholder="e.g. Operation Deep Signal">
+        </div>
+        <div class="field">
+          <label>Ship</label>
+          <select id="shipName">
+            <option value="">Select ship&hellip;</option>
+            <option value="HAVOCK">HAVOCK</option>
+            <option value="TAKANAMI">TAKANAMI</option>
+          </select>
+        </div>
+        <div class="field combo" id="fcCombo">
+          <label>Flight Controller</label>
+          <input type="text" id="fcInput" placeholder="Search character name&hellip;" autocomplete="off">
+          <div class="combo-list" id="fcList"></div>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="missionDate">
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input type="time" id="missionTime">
+        </div>
+        <div class="field">
+          <label>Captain's Name</label>
+          <input type="text" id="capName" placeholder="e.g. Roger Taylor">
+        </div>
+        <div class="field">
+          <label>Captain's Rank</label>
+          <input type="text" id="capRank" placeholder="e.g. Captain">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overall" onclick="switchTab('overall')">Overall Log</button>
+    <button class="tab-btn" data-tab="ships" onclick="switchTab('ships')">Ships Spoken To</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-overall">
+    <div class="table-wrap" id="overallTableWrap"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-ships">
+    <div class="panel" style="margin-bottom:14px;">
+      <div class="panel-head" onclick="togglePanel('newShipPanel')" id="newShipPanel">
+        <h2>Log New Ship</h2>
+        <span class="chev">&#9660;</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-form">
+          <div class="field">
+            <label>Ship Name</label>
+            <input type="text" id="newShipName" placeholder="e.g. UCS Meridian">
+          </div>
+          <div class="field">
+            <label>Affiliation</label>
+            <input type="text" id="newShipAffiliation" placeholder="e.g. UCN Fleet Command">
+          </div>
+          <div class="field">
+            <label>Ship Type</label>
+            <input type="text" id="newShipType" placeholder="e.g. Cruiser">
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="addShip()">+ Add Ship</button>
+        </div>
+      </div>
+    </div>
+    <div class="ship-grid" id="shipGrid"></div>
+  </div>
+
+  <div class="export-bar">
+    <button class="btn" onclick="importJSON()">Import Log (JSON)</button>
+    <button class="btn" onclick="exportJSON()">Export Log (JSON)</button>
+    <button class="btn btn-primary" id="pdfExportBtn" onclick="exportPDF()">Export Full Report (PDF)</button>
+  </div>
+
+  <div class="footer-note">UCN COMMS LOG &mdash; INTERNAL FLEET USE ONLY &mdash; DO NOT DISTRIBUTE OUTSIDE COMMAND</div>
+  <div class="designer-credit">This is a fan-made tool, not affiliated with or approved by Bridge Command / The London Space Elevator Limited. Designed by Lt Fin "Tetra".</div>
+</div>
+
+<!-- Ship modal -->
+<div class="modal-overlay" id="shipModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="modalShipName">SHIP NAME</h3>
+        <div class="meta-line" id="modalShipMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeShipModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- built dynamically -->
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFileInput" accept="application/json" style="display:none;">
+<div class="toast" id="toast"></div>
+
+<script src="js/vendor/jspdf.umd.min.js"></script>
+<script src="js/vendor/ucn-fonts.js"></script>
+<script src="js/pdf-export.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
