@@ -79,20 +79,19 @@ function newPage(doc, fonts){
 }
 
 function drawEmblem(doc, fonts, cx, cy, r){
+  const size = r * 2;
+  if(window.UCN_LOGO_NAVY_PNG){
+    try{
+      doc.addImage(window.UCN_LOGO_NAVY_PNG, 'PNG', cx - r, cy - r, size, size, undefined, 'FAST');
+      return;
+    }catch(err){
+      console.warn('UCN Comms Log: logo image failed to embed, falling back to drawn emblem.', err);
+    }
+  }
+  // fallback: simple drawn emblem if the logo asset didn't load
   doc.setDrawColor(...ORANGE);
   doc.setLineWidth(1.1);
   doc.circle(cx, cy, r, 'S');
-  doc.setDrawColor(...LINE);
-  doc.setLineWidth(0.4);
-  doc.circle(cx, cy, r - 4, 'S');
-  doc.setDrawColor(...ORANGE);
-  doc.setLineWidth(0.5);
-  for(let a = 0; a < 360; a += 30){
-    const rad = a * Math.PI / 180;
-    const x1 = cx + Math.cos(rad) * (r - 4), y1 = cy + Math.sin(rad) * (r - 4);
-    const x2 = cx + Math.cos(rad) * (r - 1), y2 = cy + Math.sin(rad) * (r - 1);
-    doc.line(x1, y1, x2, y2);
-  }
   doc.setFont(fonts.displayBlack, 'bold');
   doc.setFontSize(15);
   doc.setTextColor(...ORANGE);
