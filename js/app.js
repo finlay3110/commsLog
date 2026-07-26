@@ -8,12 +8,12 @@
 
 const UCN_CAST = ["Angaharad 'Angie' Talbot", "Aquila Nova", "Athena Hamilton", "Bec Dallas", "Ben Rhydding", "Billy Wallace", "Calliope 'Callie' Kihu", "Casper Bartholin", "Chef Lucia Vittorini", "Cora Dent", "Danni Acharya", "Darius Gray", "Dr. Andrew Barnes", "Dr. Brian 'Bo' Murphy", "Dr. Kennedy Greene", "Dr. Oliver Nightingale", "Eagle", "Edward 'Dingers' Bell", "Egon Larsen", "Emilia Sultana", "Esther Gefen", "Frederica 'Freddie' Moore", "Gilbert 'Teddy' Fraser", "Huey Carson", "J.U.D.I.T.H.", "Jack Talisker", "Jasmine Hannover", "Jay Washburne", "Jeremy Stockwell", "Joanna Campbell", "Jordan Simpson", "Julio Ferreira", "Kate Thursday", "Kenneth Collingwood", "Layla Talwar", "Leon Grant", "Marcus Segretto", "Neil Bell", "Nurse Nathan Kilmore", "Ozymandias 'Oz' Willcox", "Robert Lyon", "Roger Taylor", "Rowen Jones", "Sam Falco", "Saskia Ubosi", "Shirley Bishop", "Stjerne Olsen", "Tanya Scott", "Uzoma Adebayo", "Wi Yun Moon"];
 
-const UNIVERSAL_QUICK = [
-  'COMMS OPENED',
-  'COMMS CLOSED',
-  'VIDEO COMMS STARTED',
-  'VIDEO COMMS ENDED',
-  'VIDEO COMMS TRANSFERRED TO BRIDGE'
+/* Quick actions live in the entry sheet, grouped by kind. Groups are
+   always expanded — a collapsed group is a tap between the operative and
+   an action they need now. */
+const QUICK_GROUPS = [
+  { label: 'Comms', items: ['COMMS OPENED', 'COMMS CLOSED'] },
+  { label: 'Video', items: ['VIDEO COMMS STARTED', 'VIDEO COMMS ENDED', 'VIDEO COMMS TRANSFERRED TO BRIDGE'] }
 ];
 
 const WARSPITE_QUICK = [
@@ -473,6 +473,8 @@ function saveShipDetails(){
   setModalHeader(ship);
   const label = document.getElementById('modalShipLabel');
   if(label) label.textContent = ship.name;
+  if(entrySheetOpen()) document.getElementById('entrySheetTitle').textContent = 'LOG ENTRY — ' + ship.name.toUpperCase();
+  toggleShipDetails();
   toast('Ship details updated.');
 }
 
@@ -509,14 +511,16 @@ function openShipModal(id){
   setModalHeader(ship);
   document.getElementById('modalBody').innerHTML = buildModalBodyHtml(ship);
   renderEntryList();
+  document.getElementById('shipDetailsBtn').setAttribute('aria-expanded', 'false');
   const overlay = document.getElementById('shipModalOverlay');
   overlay.classList.add('open');
   overlay.scrollTop = 0;
-  const first = document.getElementById('entryTime');
+  const first = document.getElementById('logEntryBtn');
   if(first) first.focus();
 }
 
 function closeShipModal(){
+  document.getElementById('entrySheetOverlay').classList.remove('open');
   document.getElementById('shipModalOverlay').classList.remove('open');
   currentShipId = null;
   editingEntryId = null;
@@ -524,31 +528,17 @@ function closeShipModal(){
   lastFocusedBeforeModal = null;
 }
 
+/* The ship modal is a log view: details editor (hidden behind the header
+   pencil), the one action that opens the entry sheet, then the log. */
 function buildModalBodyHtml(ship){
-  const isWarspite = !!ship.special;
-  const quickBtnAttr = (label) => `data-quick-label="${escapeHtml(label)}"`;
-  const universalBtns = UNIVERSAL_QUICK.map(label =>
-    `<button class="quick-btn" ${quickBtnAttr(label)}>${escapeHtml(label)}</button>`
-  ).join('');
-
-  const warspiteBlock = isWarspite ? `
-    <div class="warspite-block">
-      <div class="wr-label">Warspite Priority Comms</div>
-      <div class="quick-grid">
-        ${WARSPITE_QUICK.map(label =>
-          `<button class="quick-btn danger" ${quickBtnAttr(label)}>${escapeHtml(label)}</button>`
-        ).join('')}
-      </div>
-    </div>` : '';
-
-  const removeBtn = isWarspite
+  const removeBtn = ship.special
     ? '<span class="hint-note">Default vessel — can\'t be removed.</span>'
     : '<button class="btn btn-sm btn-danger" id="removeShipBtn">Remove Ship</button>';
 
   return `
-    <details class="ship-details-edit">
-      <summary>Ship details</summary>
-      <div class="grid-form" style="margin-top:12px;">
+    <div class="ship-details-edit" id="shipDetailsPanel" hidden>
+      <div class="wr-label" style="margin-top:0;">Ship Details</div>
+      <div class="grid-form">
         <div class="field">
           <label for="editShipName">Ship Name</label>
           <input type="text" id="editShipName" value="${escapeHtml(ship.name)}">
@@ -566,32 +556,92 @@ function buildModalBodyHtml(ship){
         <button class="btn btn-sm" id="saveShipBtn">Save Details</button>
         ${removeBtn}
       </div>
-    </details>
-
-    <div class="field" style="max-width:160px; margin-bottom:14px;">
-      <label for="entryTime">Entry Time</label>
-      <input type="time" id="entryTime" value="${escapeHtml(nowHHMM())}">
     </div>
 
-    <div class="wr-label">Quick Entry</div>
-    <div class="quick-grid">${universalBtns}</div>
-
-    ${warspiteBlock}
-
-    <div class="wr-label">Manual Entry</div>
-    <div class="field">
-      <label for="entryText">What was said</label>
-      <textarea id="entryText" rows="3" placeholder="Log the substance of the transmission&hellip;"></textarea>
-    </div>
-    <div class="actions-row">
-      <button class="btn btn-primary" id="addEntryBtn">+ Add Entry</button>
-    </div>
+    <button class="btn btn-primary btn-block log-entry-btn" id="logEntryBtn">+ Log Entry</button>
 
     <div class="entry-list">
       <div class="wr-label" style="margin-top:0;">Log for <span id="modalShipLabel">${escapeHtml(ship.name)}</span></div>
       <div id="entryList"></div>
     </div>
   `;
+}
+
+/* ---------------- entry sheet ---------------- */
+function quickGroupHtml(label, items, danger){
+  const btns = items.map(item =>
+    `<button class="quick-btn${danger ? ' danger' : ''}" data-quick-label="${escapeHtml(item)}">${escapeHtml(item)}</button>`
+  ).join('');
+  return `<div class="quick-group">
+    <div class="wr-label">${escapeHtml(label)}</div>
+    <div class="quick-grid">${btns}</div>
+  </div>`;
+}
+
+function buildEntrySheetHtml(ship){
+  const groups = QUICK_GROUPS.map(g => quickGroupHtml(g.label, g.items, false)).join('');
+  const warspiteBlock = ship.special
+    ? `<div class="warspite-block">${quickGroupHtml('Warspite Priority Comms', WARSPITE_QUICK, true)}</div>`
+    : '';
+
+  return `
+    <div class="field sheet-time">
+      <label for="entryTime">Entry Time</label>
+      <input type="time" id="entryTime" value="${escapeHtml(nowHHMM())}">
+    </div>
+
+    ${groups}
+    ${warspiteBlock}
+
+    <div class="quick-group">
+      <div class="wr-label">Manual Entry</div>
+      <div class="field">
+        <label for="entryText">What was said</label>
+        <textarea id="entryText" rows="3" placeholder="Log the substance of the transmission&hellip;"></textarea>
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-primary" id="addEntryBtn">+ Add Entry</button>
+      </div>
+    </div>
+
+    <div class="sheet-foot">
+      <button class="btn btn-block" id="entrySheetDoneBtn">Done</button>
+    </div>
+  `;
+}
+
+/* The sheet stays open after an entry lands, so a burst of related events
+   is one tap each. `lastText` gives confirmation without the log list,
+   which is behind the sheet on a phone. */
+function setSheetMeta(ship, lastText){
+  const el = document.getElementById('entrySheetMeta');
+  if(!el) return;
+  el.textContent = lastText
+    ? 'Last logged: ' + lastText
+    : ship.entries.length + (ship.entries.length === 1 ? ' entry' : ' entries') + ' logged so far';
+}
+
+function entrySheetOpen(){
+  return document.getElementById('entrySheetOverlay').classList.contains('open');
+}
+
+function openEntrySheet(){
+  const ship = getShip(currentShipId);
+  if(!ship) return;
+  document.getElementById('entrySheetTitle').textContent = 'LOG ENTRY — ' + ship.name.toUpperCase();
+  document.getElementById('entrySheetBody').innerHTML = buildEntrySheetHtml(ship);
+  setSheetMeta(ship, null);
+  const overlay = document.getElementById('entrySheetOverlay');
+  overlay.classList.add('open');
+  overlay.scrollTop = 0;
+  const time = document.getElementById('entryTime');
+  if(time) time.focus();
+}
+
+function closeEntrySheet(){
+  document.getElementById('entrySheetOverlay').classList.remove('open');
+  const back = document.getElementById('logEntryBtn');
+  if(back) back.focus();
 }
 
 /* Only the entry list repaints when entries change, so the time field,
@@ -634,13 +684,12 @@ function entryEditHtml(e){
   </div>`;
 }
 
-/* One delegated listener, attached once at init — the modal body is
+/* One delegated listener per container, attached once at init — bodies are
    rewritten on every open, so per-element listeners would stack. */
 function wireModalDelegation(){
   const body = document.getElementById('modalBody');
   body.addEventListener('click', (e) => {
-    const quick = e.target.closest('[data-quick-label]');
-    if(quick){ logQuickEntry(quick.getAttribute('data-quick-label')); return; }
+    if(e.target.closest('#logEntryBtn')){ openEntrySheet(); return; }
 
     const del = e.target.closest('[data-delete-id]');
     if(del){ deleteEntry(currentShipId, del.getAttribute('data-delete-id')); return; }
@@ -654,10 +703,28 @@ function wireModalDelegation(){
     const cancel = e.target.closest('[data-cancel-id]');
     if(cancel){ editingEntryId = null; renderEntryList(); return; }
 
-    if(e.target.closest('#addEntryBtn')){ addManualEntry(); return; }
     if(e.target.closest('#saveShipBtn')){ saveShipDetails(); return; }
     if(e.target.closest('#removeShipBtn')){ removeCurrentShip(); return; }
   });
+}
+
+function wireEntrySheetDelegation(){
+  document.getElementById('entrySheetBody').addEventListener('click', (e) => {
+    const quick = e.target.closest('[data-quick-label]');
+    if(quick){ logQuickEntry(quick.getAttribute('data-quick-label')); return; }
+    if(e.target.closest('#addEntryBtn')){ addManualEntry(); return; }
+    if(e.target.closest('#entrySheetDoneBtn')){ closeEntrySheet(); return; }
+  });
+}
+
+function toggleShipDetails(){
+  const panel = document.getElementById('shipDetailsPanel');
+  const btn = document.getElementById('shipDetailsBtn');
+  if(!panel) return;
+  const show = panel.hasAttribute('hidden');
+  panel.toggleAttribute('hidden', !show);
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  if(show) document.getElementById('editShipName').focus();
 }
 
 function currentEntryTime(){
@@ -672,9 +739,11 @@ function pushEntry(ship, text){
 function logQuickEntry(label){
   const ship = getShip(currentShipId);
   if(!ship) return;
+  const time = currentEntryTime();
   pushEntry(ship, label);
   commit();
   renderEntryList();
+  setSheetMeta(ship, `${time} · ${label}`);
   toast(`Logged: ${label}`);
 }
 
@@ -684,10 +753,12 @@ function addManualEntry(){
   const textEl = document.getElementById('entryText');
   const text = textEl.value.trim();
   if(!text){ toast('Enter what was said first.'); textEl.focus(); return; }
+  const time = currentEntryTime();
   pushEntry(ship, text);
   textEl.value = '';
   commit();
   renderEntryList();
+  setSheetMeta(ship, `${time} · ${text}`);
   toast('Entry logged.');
 }
 
@@ -818,7 +889,11 @@ function maybeShowIntroOnFirstLoad(){
 /* ---------------- modal keyboard handling ---------------- */
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
+/* Topmost first: the entry sheet stacks over the ship modal, so Escape and
+   the focus trap act on it before anything underneath. */
 function topOpenModal(){
+  const sheet = document.getElementById('entrySheetOverlay');
+  if(sheet.classList.contains('open')) return sheet;
   const intro = document.getElementById('introOverlay');
   if(intro.classList.contains('open')) return intro;
   const ship = document.getElementById('shipModalOverlay');
@@ -832,7 +907,9 @@ function wireGlobalKeys(){
     if(!overlay) return;
     if(e.key === 'Escape'){
       e.preventDefault();
-      if(overlay.id === 'introOverlay') closeIntro(true); else closeShipModal();
+      if(overlay.id === 'entrySheetOverlay') closeEntrySheet();
+      else if(overlay.id === 'introOverlay') closeIntro(true);
+      else closeShipModal();
       return;
     }
     if(e.key !== 'Tab') return;
@@ -858,8 +935,14 @@ function wireStaticControls(){
   document.getElementById('pdfExportBtn').addEventListener('click', () => exportPDF());
 
   document.getElementById('modalCloseBtn').addEventListener('click', closeShipModal);
+  document.getElementById('shipDetailsBtn').addEventListener('click', toggleShipDetails);
   document.getElementById('shipModalOverlay').addEventListener('click', (e) => {
     if(e.target.id === 'shipModalOverlay') closeShipModal();
+  });
+
+  document.getElementById('entrySheetCloseBtn').addEventListener('click', closeEntrySheet);
+  document.getElementById('entrySheetOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'entrySheetOverlay') closeEntrySheet();
   });
 
   document.getElementById('newMissionBtn').addEventListener('click', newMission);
@@ -885,6 +968,7 @@ function init(){
   wireFcCombo();
   wireImportInput();
   wireModalDelegation();
+  wireEntrySheetDelegation();
   wireStaticControls();
   wireGlobalKeys();
   applyStateToUi();

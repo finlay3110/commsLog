@@ -174,9 +174,29 @@
         <h3 id="modalShipName">SHIP NAME</h3>
         <div class="meta-line" id="modalShipMeta"></div>
       </div>
-      <button class="modal-close" id="modalCloseBtn">&times;</button>
+      <div class="head-actions">
+        <button class="modal-head-btn" id="shipDetailsBtn" title="Edit ship details"
+                aria-label="Edit ship details" aria-expanded="false">&#9998;</button>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close">&times;</button>
+      </div>
     </div>
     <div class="modal-body" id="modalBody">
+      <!-- built dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Entry sheet: quick actions + manual entry, stacked over the ship modal -->
+<div class="modal-overlay sheet-overlay" id="entrySheetOverlay">
+  <div class="modal sheet" role="dialog" aria-modal="true" aria-labelledby="entrySheetTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="entrySheetTitle">LOG ENTRY</h3>
+        <div class="meta-line" id="entrySheetMeta"></div>
+      </div>
+      <button class="modal-close" id="entrySheetCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="entrySheetBody">
       <!-- built dynamically -->
     </div>
   </div>
@@ -196,7 +216,7 @@
       <ol class="intro-list">
         <li><b>Briefing</b> &mdash; fill in the mission details: operative, ship, flight controller, date/time, and captain. This heads up the PDF report.</li>
         <li><b>Log</b> &mdash; every transmission from every ship, merged in time order.</li>
-        <li><b>Ships</b> &mdash; log a new ship, or tap an existing one (UCS Warspite is there by default) to open its comms log. Quick-entry buttons log common events instantly; UCS Warspite also gets priority buttons for nuclear authorization and Code Omega traffic. Entries can be edited or deleted, and ship details changed, from inside that log.</li>
+        <li><b>Ships</b> &mdash; log a new ship, or tap an existing one (UCS Warspite is there by default) to open its comms log. <b>+ Log Entry</b> opens the entry pad: set the time once, then fire off quick actions &mdash; grouped Comms and Video, plus Warspite's priority buttons for nuclear authorization and Code Omega traffic &mdash; or type a manual entry. It stays open so a run of events is one tap each; close it with Done or Escape. Entries can be edited or deleted from the log, and ship details changed with the pencil in the header.</li>
         <li><b>Export</b> &mdash; save your log as JSON to keep it beyond this browser, or generate a full formatted PDF report.</li>
         <li>Your log is <b>saved in this browser automatically</b> after every change, so a refresh or a crash won't lose it. Export the JSON if you need it on another device.</li>
         <li>Use <b>+ New Mission</b> in the header to wipe the board and start fresh for a new session.</li>
