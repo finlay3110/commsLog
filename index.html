@@ -31,7 +31,7 @@
   </div>
 
   <!-- BRIEFING TAB -->
-  <div class="tab-panel active" id="tab-briefing">
+  <div class="tab-panel active" id="tab-briefing" role="tabpanel">
     <div class="panel static">
       <div class="panel-head static">
         <h2>Mission Briefing</h2>
@@ -39,19 +39,19 @@
       <div class="panel-body">
         <div class="grid-form">
           <div class="field">
-            <label>Comms Operative Name</label>
+            <label for="opName">Comms Operative Name</label>
             <input type="text" id="opName" placeholder="e.g. Ellis Swain">
           </div>
           <div class="field">
-            <label>Operative Rank</label>
+            <label for="opRank">Operative Rank</label>
             <input type="text" id="opRank" placeholder="e.g. Ensign">
           </div>
           <div class="field">
-            <label>Mission Name</label>
+            <label for="missionName">Mission Name</label>
             <input type="text" id="missionName" placeholder="e.g. Operation Deep Signal">
           </div>
           <div class="field">
-            <label>Ship</label>
+            <label for="shipName">Ship</label>
             <select id="shipName">
               <option value="">Select ship&hellip;</option>
               <option value="HAVOCK">HAVOCK</option>
@@ -59,24 +59,25 @@
             </select>
           </div>
           <div class="field combo" id="fcCombo">
-            <label>Flight Controller</label>
-            <input type="text" id="fcInput" placeholder="Search character name&hellip;" autocomplete="off">
-            <div class="combo-list" id="fcList"></div>
+            <label for="fcInput">Flight Controller</label>
+            <input type="text" id="fcInput" placeholder="Search character name&hellip;" autocomplete="off"
+                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="fcList">
+            <div class="combo-list" id="fcList" role="listbox" aria-label="Flight controllers"></div>
           </div>
           <div class="field">
-            <label>Date</label>
+            <label for="missionDate">Date</label>
             <input type="date" id="missionDate">
           </div>
           <div class="field">
-            <label>Time</label>
+            <label for="missionTime">Time</label>
             <input type="time" id="missionTime">
           </div>
           <div class="field">
-            <label>Captain's Name</label>
+            <label for="capName">Captain's Name</label>
             <input type="text" id="capName" placeholder="e.g. Roger Taylor">
           </div>
           <div class="field">
-            <label>Captain's Rank</label>
+            <label for="capRank">Captain's Rank</label>
             <input type="text" id="capRank" placeholder="e.g. Captain">
           </div>
         </div>
@@ -85,12 +86,12 @@
   </div>
 
   <!-- OVERALL LOG TAB -->
-  <div class="tab-panel" id="tab-overall">
+  <div class="tab-panel" id="tab-overall" role="tabpanel">
     <div class="table-wrap" id="overallTableWrap"></div>
   </div>
 
   <!-- SHIPS TAB -->
-  <div class="tab-panel" id="tab-ships">
+  <div class="tab-panel" id="tab-ships" role="tabpanel">
     <div class="panel" id="newShipPanelWrap" style="margin-bottom:14px;">
       <div class="panel-head" id="newShipPanel">
         <h2>Log New Ship</h2>
@@ -99,15 +100,15 @@
       <div class="panel-body">
         <div class="grid-form">
           <div class="field">
-            <label>Ship Name</label>
+            <label for="newShipName">Ship Name</label>
             <input type="text" id="newShipName" placeholder="e.g. UCS Meridian">
           </div>
           <div class="field">
-            <label>Affiliation</label>
+            <label for="newShipAffiliation">Affiliation</label>
             <input type="text" id="newShipAffiliation" placeholder="e.g. UCN Fleet Command">
           </div>
           <div class="field">
-            <label>Ship Type</label>
+            <label for="newShipType">Ship Type</label>
             <input type="text" id="newShipType" placeholder="e.g. Cruiser">
           </div>
         </div>
@@ -120,10 +121,10 @@
   </div>
 
   <!-- EXPORT TAB -->
-  <div class="tab-panel" id="tab-export">
+  <div class="tab-panel" id="tab-export" role="tabpanel">
     <div class="export-section">
       <h2 class="export-heading">Data Export</h2>
-      <p class="export-desc">Export the full log as JSON to back it up or import it into another UCN tool. Import brings a previously exported log back in.</p>
+      <p class="export-desc">Your log is saved in this browser automatically. Export it as JSON to keep a permanent copy, move it to another device, or load it into another UCN tool. Import brings a previously exported log back in, replacing what's on the board.</p>
       <div class="export-btn-row">
         <button class="btn btn-block" id="importJsonBtn">Import Log (JSON)</button>
         <button class="btn btn-block" id="exportJsonBtn">Export Log (JSON)</button>
@@ -135,6 +136,7 @@
       <div class="export-btn-row">
         <button class="btn btn-primary btn-block" id="pdfExportBtn">Export Full Report (PDF)</button>
       </div>
+      <p class="hint-note" style="display:block; margin:12px 0 0;">The PDF engine loads the first time you open this tab &mdash; give it a moment on a slow connection.</p>
     </div>
     <div class="footer-note">UCN COMMS LOG &mdash; INTERNAL FLEET USE ONLY &mdash; DO NOT DISTRIBUTE OUTSIDE COMMAND</div>
     <div class="designer-credit">This is a fan-made tool, not affiliated with or approved by Bridge Command / The London Space Elevator Limited. Designed by Lt Fin "Tetra".</div>
@@ -144,20 +146,20 @@
 
 <!-- Bottom tab bar -->
 <nav class="bottom-tabbar" id="bottomTabs">
-  <div class="bottom-tabbar-inner">
-    <button class="bottom-tab-btn active" data-tab="briefing">
+  <div class="bottom-tabbar-inner" role="tablist" aria-label="Sections">
+    <button class="bottom-tab-btn active" data-tab="briefing" role="tab" aria-controls="tab-briefing" aria-selected="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="1.5"/><rect x="9" y="2.5" width="6" height="3" rx="1"/><line x1="8.5" y1="10" x2="15.5" y2="10"/><line x1="8.5" y1="13.5" x2="15.5" y2="13.5"/><line x1="8.5" y1="17" x2="12.5" y2="17"/></svg>
       <span>Briefing</span>
     </button>
-    <button class="bottom-tab-btn" data-tab="overall">
+    <button class="bottom-tab-btn" data-tab="overall" role="tab" aria-controls="tab-overall" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-7 3 14 2-10 2 3h5"/></svg>
       <span>Log</span>
     </button>
-    <button class="bottom-tab-btn" data-tab="ships">
+    <button class="bottom-tab-btn" data-tab="ships" role="tab" aria-controls="tab-ships" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15h16l-2 4H6z"/><path d="M6 15V9h9l3 6"/><path d="M9 9V4h2v5"/></svg>
       <span>Ships</span>
     </button>
-    <button class="bottom-tab-btn" data-tab="export">
+    <button class="bottom-tab-btn" data-tab="export" role="tab" aria-controls="tab-export" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
       <span>Export</span>
     </button>
@@ -166,7 +168,7 @@
 
 <!-- Ship modal -->
 <div class="modal-overlay" id="shipModalOverlay">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalShipName">
     <div class="modal-head">
       <div>
         <h3 id="modalShipName">SHIP NAME</h3>
@@ -182,10 +184,10 @@
 
 <!-- First-load instructions modal -->
 <div class="modal-overlay" id="introOverlay">
-  <div class="modal intro-modal">
+  <div class="modal intro-modal" role="dialog" aria-modal="true" aria-labelledby="introTitle">
     <div class="modal-head">
       <div>
-        <h3>Welcome to UCN Comms Log</h3>
+        <h3 id="introTitle">Welcome to UCN Comms Log</h3>
         <div class="meta-line">A quick rundown before you start logging</div>
       </div>
       <button class="modal-close" id="introCloseBtn">&times;</button>
@@ -194,8 +196,9 @@
       <ol class="intro-list">
         <li><b>Briefing</b> &mdash; fill in the mission details: operative, ship, flight controller, date/time, and captain. This heads up the PDF report.</li>
         <li><b>Log</b> &mdash; every transmission from every ship, merged in time order.</li>
-        <li><b>Ships</b> &mdash; log a new ship, or tap an existing one (UCS Warspite is there by default) to open its comms log. Quick-entry buttons log common events instantly; UCS Warspite also gets priority buttons for nuclear authorization and Code Omega traffic.</li>
-        <li><b>Export</b> &mdash; save your log as JSON any time (nothing is auto-saved — this is your backup), or generate a full formatted PDF report.</li>
+        <li><b>Ships</b> &mdash; log a new ship, or tap an existing one (UCS Warspite is there by default) to open its comms log. Quick-entry buttons log common events instantly; UCS Warspite also gets priority buttons for nuclear authorization and Code Omega traffic. Entries can be edited or deleted, and ship details changed, from inside that log.</li>
+        <li><b>Export</b> &mdash; save your log as JSON to keep it beyond this browser, or generate a full formatted PDF report.</li>
+        <li>Your log is <b>saved in this browser automatically</b> after every change, so a refresh or a crash won't lose it. Export the JSON if you need it on another device.</li>
         <li>Use <b>+ New Mission</b> in the header to wipe the board and start fresh for a new session.</li>
       </ol>
       <div class="actions-row">
@@ -206,12 +209,11 @@
 </div>
 
 <input type="file" id="importFileInput" accept="application/json" style="display:none;">
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/vendor/jspdf.umd.min.js"></script>
-<script src="js/vendor/ucn-fonts.js"></script>
-<script src="js/vendor/ucn-logo.js"></script>
-<script src="js/pdf-export.js"></script>
-<script src="js/app.js"></script>
+<!-- jsPDF, the embedded fonts and the logo (~1.1 MB) are pulled in by
+     js/pdf-export.js on demand, not on page load. -->
+<script src="js/pdf-export.js" defer></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>

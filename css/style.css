@@ -1,8 +1,8 @@
-@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; }
-@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-SemiBold.ttf') format('truetype'); font-weight: 600; font-style: normal; }
-@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; }
-@font-face { font-family: 'Orbitron'; src: url('../fonts/Orbitron-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; }
-@font-face { font-family: 'Orbitron'; src: url('../fonts/Orbitron-Black.ttf') format('truetype'); font-weight: 900; font-style: normal; }
+@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-Regular.ttf') format('truetype'); font-display:swap; font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-SemiBold.ttf') format('truetype'); font-display:swap; font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Exo 2'; src: url('../fonts/Exo2-Bold.ttf') format('truetype'); font-display:swap; font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Orbitron'; src: url('../fonts/Orbitron-Bold.ttf') format('truetype'); font-display:swap; font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Orbitron'; src: url('../fonts/Orbitron-Black.ttf') format('truetype'); font-display:swap; font-weight: 900; font-style: normal; }
 
 :root{
   --navy:#0a1a2e;
@@ -177,7 +177,6 @@ body{
   opacity:0.45; cursor:not-allowed; border-color:var(--line); color:var(--text-dim); background:var(--navy-2);
 }
 .actions-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center; }
-.coming-soon{ font-size:10px; letter-spacing:1px; color:var(--text-dim); font-style:italic; }
 
 /* ---------- TABLE (overall log) ---------- */
 .table-wrap{ border:1px solid var(--line); border-radius:4px; overflow:hidden; }
@@ -205,6 +204,7 @@ table.log-table tr:hover td{ background:rgba(255,255,255,0.02); }
   transition:border-color 0.15s, transform 0.1s; position:relative;
 }
 .ship-card:hover{ border-color:var(--orange); transform:translateY(-1px); }
+.ship-card:focus-visible{ outline:2px solid var(--orange); outline-offset:2px; }
 .ship-card.default::after{
   content:'DEFAULT'; position:absolute; top:10px; right:10px;
   font-family:'Orbitron', sans-serif; font-size:8.5px; letter-spacing:1px; color:var(--orange);
@@ -256,8 +256,35 @@ table.log-table tr:hover td{ background:rgba(255,255,255,0.02); }
 }
 .entry-item .et{ font-family:'Orbitron', sans-serif; color:var(--orange-2); white-space:nowrap; flex-shrink:0; font-size:11.5px; padding-top:1px; }
 .entry-item .em{ flex:1; color:#dce6f0; }
-.entry-item .ed{ flex-shrink:0; color:var(--text-dim); cursor:pointer; }
-.entry-item .ed:hover{ color:var(--danger); }
+.entry-item .entry-act{
+  flex-shrink:0; background:none; border:none; color:var(--text-dim); cursor:pointer;
+  font-size:14px; line-height:1; padding:0 4px; font-family:'Exo 2', sans-serif;
+}
+.entry-item .entry-act:hover{ color:var(--orange-2); }
+.entry-item .entry-act.danger:hover{ color:var(--danger); }
+
+.entry-item.editing{ flex-wrap:wrap; align-items:flex-start; }
+.entry-item.editing .entry-edit-time{
+  width:110px; background:var(--navy-2); border:1px solid var(--orange); color:#eef4fa;
+  padding:6px 8px; border-radius:3px; font-family:'Exo 2', sans-serif; font-size:12.5px;
+}
+.entry-item.editing .entry-edit-text{
+  flex:1; min-width:180px; background:var(--navy-2); border:1px solid var(--orange); color:#eef4fa;
+  padding:6px 8px; border-radius:3px; font-family:'Exo 2', sans-serif; font-size:12.5px; resize:vertical;
+}
+.entry-item.editing .entry-edit-actions{ display:flex; gap:8px; width:100%; justify-content:flex-end; }
+
+/* ship details editor inside the ship modal */
+.ship-details-edit{
+  border:1px solid var(--line); border-radius:3px; padding:10px 12px; margin-bottom:16px;
+  background:rgba(255,255,255,0.02);
+}
+.ship-details-edit summary{
+  cursor:pointer; font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--orange); font-weight:700; user-select:none;
+}
+.ship-details-edit summary:focus-visible{ outline:1px solid var(--orange); outline-offset:3px; }
+.hint-note{ font-size:11px; color:var(--text-dim); font-style:italic; align-self:center; }
 
 .warspite-block{ border:1px solid var(--danger); border-radius:3px; padding:12px; margin-bottom:14px; background:rgba(214,69,69,0.05); }
 .warspite-block .wr-label{ color:var(--danger); margin-top:0; }
@@ -290,7 +317,7 @@ table.log-table tr:hover td{ background:rgba(255,255,255,0.02); }
 }
 
 .toast{
-  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+  position:fixed; bottom:calc(74px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px);
   background:var(--navy-3); border:1px solid var(--orange); color:#eef4fa; padding:10px 18px;
   border-radius:4px; font-size:12.5px; opacity:0; pointer-events:none; transition:all 0.25s; z-index:400;
   font-family:'Exo 2', sans-serif;
