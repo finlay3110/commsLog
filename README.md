@@ -14,15 +14,21 @@ Space Elevator Limited.
 - **Ships Spoken To tab** — log new ships (name, affiliation, type) and click
   into any ship to log communications against it. UCS Warspite is present by
   default and can't be removed.
-  - Every ship gets quick-entry buttons: Comms Opened, Comms Closed, Video
-    Comms Started, Video Comms Ended, Video Comms Transferred to Bridge.
-  - UCS Warspite additionally gets priority quick-entry buttons: Nuclear
+  - A ship's log opens as a log view: the transmissions, and one
+    **+ Log Entry** button that opens the entry pad over it (a bottom sheet
+    on a phone).
+  - The entry pad holds the entry time and every quick action, grouped:
+    **Comms** (Opened, Closed) and **Video** (Started, Ended, Transferred to
+    Bridge). UCS Warspite additionally gets a priority group: Nuclear
     Authorization Requested, Nuclear Authorization Declined, FC Advised of
     Code Omega UVP Activity, FC Advised of Request for Urgent Support.
-  - Manual entries can also be logged with a custom time and message.
-  - Entries can be edited (time and text) or deleted after the fact, and a
-    ship's name, affiliation and type can be corrected from inside its log.
-    Any ship except UCS Warspite can be removed.
+    Manual entries with a custom message are logged from the same pad.
+  - The pad **stays open** after each entry — set the time once and log a
+    run of events with one tap each, with the last one echoed in its
+    header. Close it with Done, the X, Escape, or by tapping outside.
+  - Entries can be edited (time and text) or deleted from the log, and a
+    ship's name, affiliation and type corrected via the pencil in the log
+    header. Any ship except UCS Warspite can be removed.
 - **Export Log (JSON)** — exports the full briefing + all ship logs as JSON,
   for import into another UCN tool.
 - **Import Log (JSON)** — reloads a previously exported log. The file is
