@@ -60,6 +60,10 @@ fonts/*.ttf               Exo 2 / Orbitron font files for on-screen display
   `localStorage` on that one device — use **Export Log (JSON)** for a
   permanent copy or to move a log elsewhere. **+ New Mission** clears both the
   board and the saved copy.
+- The briefing date defaults to today's day and month in **2182**, the
+  in-universe year. Change `LARP_YEAR` at the top of `js/app.js` if the
+  campaign year moves on. It's only a default — the date picker accepts
+  anything.
 - Log ordering is anchored to the briefing time, so a mission that runs past
   midnight keeps 23:50 → 00:15 in the order it actually happened. Entries
   timed up to two hours before the briefing time are treated as pre-mission

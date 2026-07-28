@@ -26,6 +26,10 @@ const WARSPITE_QUICK = [
 const STORAGE_KEY = 'ucnCommsLogState_v1';
 const INTRO_SEEN_KEY = 'ucnCommsLogIntroSeen_v1';
 
+/* In-universe year — the briefing date defaults to today's day and month
+   in this year. */
+const LARP_YEAR = 2182;
+
 /* Entries timed up to this many minutes before the briefing time are read
    as pre-mission rather than as next-day traffic. Everything else earlier
    than the briefing time is treated as after midnight. */
@@ -35,8 +39,18 @@ const PRE_MISSION_GRACE_MIN = 120;
 function uid(prefix){ return prefix + '-' + Math.random().toString(36).slice(2,9) + Date.now().toString(36); }
 function pad2(n){ return String(n).padStart(2,'0'); }
 function nowHHMM(){ const d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
-/* Local date — toISOString() would hand back the UTC day and roll over early. */
-function todayISO(){ const d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+/* Today's day and month, in the in-universe year. Local date — toISOString()
+   would hand back the UTC day and roll over early. */
+function isLeapYear(y){ return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+function todayISO(){
+  const d = new Date();
+  const month = d.getMonth() + 1;
+  let day = d.getDate();
+  /* 29 Feb has no counterpart in a non-leap LARP year — clamp rather than
+     emit a date the picker will reject. */
+  if(month === 2 && day === 29 && !isLeapYear(LARP_YEAR)) day = 28;
+  return LARP_YEAR + '-' + pad2(month) + '-' + pad2(day);
+}
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function asString(v){ return typeof v === 'string' ? v : ''; }
 
