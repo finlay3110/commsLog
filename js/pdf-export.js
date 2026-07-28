@@ -200,7 +200,7 @@ function buildCoverPage(doc, fonts, meta){
     ['MISSION NAME', meta.missionName || '—'],
     ['SHIP', meta.shipName || '—'],
     ['FLIGHT CONTROLLER', meta.fc || '—'],
-    ['DATE', meta.date || '—'],
+    ['DATE', isoToDisplay(meta.date) || '—'],
     ['TIME', meta.time || '—'],
     ['CAPTAIN', joinNameRank(meta.capName, meta.capRank)],
   ];
