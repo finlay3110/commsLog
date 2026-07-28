@@ -66,7 +66,9 @@
           </div>
           <div class="field">
             <label for="missionDate">Date</label>
-            <input type="date" id="missionDate">
+            <input type="text" id="missionDate" placeholder="DD-MM-YYYY" inputmode="numeric"
+                   maxlength="10" autocomplete="off" aria-describedby="missionDateHint">
+            <span class="field-hint" id="missionDateHint">DD-MM-YYYY</span>
           </div>
           <div class="field">
             <label for="missionTime">Time</label>

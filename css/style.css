@@ -118,6 +118,10 @@ body{
   width:100%; background:var(--navy-2); border:1px solid var(--line); color:#eef4fa;
   padding:9px 10px; border-radius:3px; font-family:'Exo 2', sans-serif; font-size:13.5px;
 }
+.field-hint{
+  display:block; font-size:10px; letter-spacing:1px; color:var(--text-dim);
+  margin-top:4px; text-transform:uppercase;
+}
 .field input:focus, .field select:focus, .field textarea:focus{
   outline:none; border-color:var(--orange);
 }

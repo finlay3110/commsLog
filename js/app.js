@@ -39,16 +39,57 @@ const PRE_MISSION_GRACE_MIN = 120;
 function uid(prefix){ return prefix + '-' + Math.random().toString(36).slice(2,9) + Date.now().toString(36); }
 function pad2(n){ return String(n).padStart(2,'0'); }
 function nowHHMM(){ const d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+/* Dates are held as ISO (YYYY-MM-DD) so they sort and export predictably,
+   and shown to the operative as DD-MM-YYYY. */
+function isLeapYear(y){ return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+function daysInMonth(y, m){ return [31, isLeapYear(y) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]; }
+
+function isoToDisplay(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso == null ? '' : iso).trim());
+  return m ? m[3] + '-' + m[2] + '-' + m[1] : '';
+}
+
+function displayToIso(text){
+  const m = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(String(text == null ? '' : text).trim());
+  if(!m) return '';
+  const day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+  if(month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return '';
+  return year + '-' + pad2(month) + '-' + pad2(day);
+}
+
+/* Accepts either format, so older logs and hand-edited files still load. */
+function normaliseDate(v){
+  const s = asString(v).trim();
+  if(!s) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return displayToIso(s);
+}
+
+/* Drops the dashes in as you type: "28072182" becomes "28-07-2182". Dashes
+   the operative types themselves are kept as the segment breaks, so "7-4-2182"
+   survives instead of being re-cut into "74-21-82". */
+function formatDateTyping(raw){
+  const cleaned = String(raw).replace(/[^\d-]/g, '');
+  const caps = [2, 2, 4];
+  const parts = cleaned.split('-');
+  const out = [];
+  let overflow = '';
+  for(let i = 0; i < caps.length; i++){
+    if(parts[i] === undefined && !overflow) break;
+    const seg = overflow + (parts[i] || '');
+    overflow = seg.slice(caps[i]);
+    out.push(seg.slice(0, caps[i]));
+  }
+  return out.join('-');
+}
+
 /* Today's day and month, in the in-universe year. Local date — toISOString()
    would hand back the UTC day and roll over early. */
-function isLeapYear(y){ return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
 function todayISO(){
   const d = new Date();
   const month = d.getMonth() + 1;
-  let day = d.getDate();
-  /* 29 Feb has no counterpart in a non-leap LARP year — clamp rather than
-     emit a date the picker will reject. */
-  if(month === 2 && day === 29 && !isLeapYear(LARP_YEAR)) day = 28;
+  /* 29 Feb has no counterpart in a non-leap LARP year — clamp it. */
+  const day = Math.min(d.getDate(), daysInMonth(LARP_YEAR, month));
   return LARP_YEAR + '-' + pad2(month) + '-' + pad2(day);
 }
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -117,6 +158,7 @@ function normaliseBriefing(raw){
   if(raw && typeof raw === 'object'){
     Object.keys(b).forEach(k => { if(typeof raw[k] === 'string') b[k] = raw[k]; });
     if(b.time) b.time = normaliseTime(b.time) || b.time;
+    b.date = normaliseDate(b.date);
   }
   return b;
 }
@@ -284,6 +326,7 @@ const BRIEFING_FIELD_IDS = {
 function wireBriefingFields(){
   Object.keys(BRIEFING_FIELD_IDS).forEach(key => {
     const el = document.getElementById(BRIEFING_FIELD_IDS[key]);
+    if(key === 'date'){ wireDateField(el); return; }
     const onChange = () => {
       state.briefing[key] = el.value;
       saveState();
@@ -295,10 +338,41 @@ function wireBriefingFields(){
   });
 }
 
+/* The date field is typed as DD-MM-YYYY but stored as ISO. State only moves
+   when the text parses; an unparseable entry snaps back on blur rather than
+   silently leaving the briefing dateless. */
+function wireDateField(el){
+  el.addEventListener('input', () => {
+    if(el.selectionStart === el.value.length){
+      const formatted = formatDateTyping(el.value);
+      if(formatted !== el.value) el.value = formatted;
+    }
+    const iso = displayToIso(el.value);
+    if(iso || el.value.trim() === ''){
+      state.briefing.date = iso;
+      saveState();
+    }
+  });
+  el.addEventListener('blur', () => {
+    const text = el.value.trim();
+    if(text === ''){ state.briefing.date = ''; saveState(); return; }
+    const iso = displayToIso(text);
+    if(iso){
+      state.briefing.date = iso;
+      el.value = isoToDisplay(iso);
+      saveState();
+      return;
+    }
+    el.value = isoToDisplay(state.briefing.date);
+    toast('Date needs to be DD-MM-YYYY.');
+  });
+}
+
 /* Pushes state into the form. Safe to call as often as needed. */
 function applyStateToUi(){
   Object.keys(BRIEFING_FIELD_IDS).forEach(key => {
-    document.getElementById(BRIEFING_FIELD_IDS[key]).value = state.briefing[key] || '';
+    const value = key === 'date' ? isoToDisplay(state.briefing.date) : (state.briefing[key] || '');
+    document.getElementById(BRIEFING_FIELD_IDS[key]).value = value;
   });
   document.getElementById('fcInput').value = state.briefing.fc || '';
 }
