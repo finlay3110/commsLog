@@ -144,6 +144,9 @@ function makeDefaultWarspite(){
 let state = { briefing: defaultBriefing(), ships: [ makeDefaultWarspite() ] };
 let currentShipId = null;
 let editingEntryId = null;
+/* Set once the operative edits the entry time by hand — until then the sheet
+   keeps it on the current clock. Cleared each time the sheet opens. */
+let entryTimeTouched = false;
 let storageOk = true;
 
 function initState(){
@@ -716,6 +719,7 @@ function entrySheetOpen(){
 function openEntrySheet(){
   const ship = getShip(currentShipId);
   if(!ship) return;
+  entryTimeTouched = false;
   document.getElementById('entrySheetTitle').textContent = 'LOG ENTRY — ' + ship.name.toUpperCase();
   document.getElementById('entrySheetBody').innerHTML = buildEntrySheetHtml(ship);
   setSheetMeta(ship, null);
@@ -797,6 +801,9 @@ function wireModalDelegation(){
 }
 
 function wireEntrySheetDelegation(){
+  document.getElementById('entrySheetBody').addEventListener('input', (e) => {
+    if(e.target.id === 'entryTime') entryTimeTouched = true;
+  });
   document.getElementById('entrySheetBody').addEventListener('click', (e) => {
     const quick = e.target.closest('[data-quick-label]');
     if(quick){ logQuickEntry(quick.getAttribute('data-quick-label')); return; }
@@ -822,6 +829,10 @@ function currentEntryTime(){
 
 function pushEntry(ship, text){
   ship.entries.push({ id: uid('entry'), time: currentEntryTime(), text, ts: Date.now() });
+  /* The sheet stays open between entries, so an untouched time field would
+     stamp the whole burst with the moment the sheet opened. */
+  const el = document.getElementById('entryTime');
+  if(el && !entryTimeTouched) el.value = nowHHMM();
 }
 
 function logQuickEntry(label){
