@@ -46,9 +46,21 @@
             <label for="opRank">Operative Rank</label>
             <input type="text" id="opRank" placeholder="e.g. Ensign">
           </div>
-          <div class="field">
+          <div class="field combo" id="missionCombo">
             <label for="missionName">Mission Name</label>
-            <input type="text" id="missionName" placeholder="e.g. Operation Deep Signal">
+            <input type="text" id="missionName" placeholder="Search or type a mission&hellip;" autocomplete="off"
+                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="missionList">
+            <div class="combo-list" id="missionList" role="listbox" aria-label="Known operations"></div>
+          </div>
+          <div class="field">
+            <label for="missionType">Mission Type</label>
+            <select id="missionType">
+              <option value="">Select type&hellip;</option>
+              <option value="Military">Military</option>
+              <option value="Exploration">Exploration</option>
+              <option value="Diplomacy">Diplomacy</option>
+              <option value="Intrigue">Intrigue</option>
+            </select>
           </div>
           <div class="field">
             <label for="shipName">Ship</label>

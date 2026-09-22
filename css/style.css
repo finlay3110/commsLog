@@ -137,6 +137,8 @@ body{
 .combo-list.open{ display:block; }
 .combo-list div{ padding:8px 10px; font-size:13px; cursor:pointer; }
 .combo-list div:hover, .combo-list div.hi{ background:var(--orange); color:var(--navy); }
+.combo-list .combo-note{ float:right; color:var(--text-dim); font-size:11px; letter-spacing:1px; text-transform:uppercase; }
+.combo-list div:hover .combo-note, .combo-list div.hi .combo-note{ color:var(--navy); }
 .combo-list .none{ color:var(--text-dim); font-style:italic; cursor:default; }
 .combo-list .none:hover{ background:none; color:var(--text-dim); }
 

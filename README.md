@@ -6,9 +6,14 @@ Space Elevator Limited.
 
 ## What it does
 
-- **Mission Briefing** — records comms operative, mission name, ship
+- **Mission Briefing** — records comms operative, mission name and type, ship
   (HAVOCK / TAKANAMI), flight controller (searchable by character name only,
   from the campaign cast list), date, time, and captain.
+  - **Mission name** is searchable against the campaign's known operations,
+    each listed with its type. Picking one fills the **Mission Type** in
+    (OPERATION TEDDER → Military). Any other mission name can be typed
+    freely, and the type chosen by hand — the list never forces a pick.
+    Known operations live in `OPERATIONS` at the top of `js/app.js`.
 - **Overall Log tab** — every transmission from every ship, merged and sorted
   by time.
 - **Ships Spoken To tab** — log new ships (name, affiliation, type) and click
