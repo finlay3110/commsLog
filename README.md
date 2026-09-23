@@ -9,11 +9,18 @@ Space Elevator Limited.
 - **Mission Briefing** — records comms operative, mission name and type, ship
   (HAVOCK / TAKANAMI), flight controller (searchable by character name only,
   from the campaign cast list), date, time, and captain.
+  - **Operative Rank** and **Captain's Rank** are searchable lists of the UCN
+    ranks (Cadet through Admiral of the Fleet), shown junior first rather
+    than alphabetically. Any other rank can still be typed. The list lives
+    in `UCN_RANKS` at the top of `js/app.js`.
   - **Mission name** is searchable against the campaign's known operations,
     each listed with its type. Picking one fills the **Mission Type** in
     (OPERATION TEDDER → Military). Any other mission name can be typed
     freely, and the type chosen by hand — the list never forces a pick.
     Known operations live in `OPERATIONS` at the top of `js/app.js`.
+  - Every one of these fields — both ranks, mission name and flight
+    controller — has a dropdown arrow to browse the whole list, and accepts
+    anything typed. Arrow keys and Enter work throughout.
 - **Overall Log tab** — every transmission from every ship, merged and sorted
   by time.
 - **Ships Spoken To tab** — log new ships (name, affiliation, type) and click

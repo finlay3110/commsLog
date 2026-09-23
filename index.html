@@ -42,14 +42,18 @@
             <label for="opName">Comms Operative Name</label>
             <input type="text" id="opName" placeholder="e.g. Ellis Swain">
           </div>
-          <div class="field">
+          <div class="field combo" id="opRankCombo">
             <label for="opRank">Operative Rank</label>
-            <input type="text" id="opRank" placeholder="e.g. Ensign">
+            <input type="text" id="opRank" placeholder="Search or type a rank&hellip;" autocomplete="off"
+                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="opRankList">
+            <button type="button" class="combo-toggle" id="opRankToggle" tabindex="-1" aria-expanded="false" aria-label="Show all ranks">&#9662;</button>
+            <div class="combo-list" id="opRankList" role="listbox" aria-label="UCN ranks"></div>
           </div>
           <div class="field combo" id="missionCombo">
             <label for="missionName">Mission Name</label>
             <input type="text" id="missionName" placeholder="Search or type a mission&hellip;" autocomplete="off"
                    role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="missionList">
+            <button type="button" class="combo-toggle" id="missionNameToggle" tabindex="-1" aria-expanded="false" aria-label="Show all operations">&#9662;</button>
             <div class="combo-list" id="missionList" role="listbox" aria-label="Known operations"></div>
           </div>
           <div class="field">
@@ -74,6 +78,7 @@
             <label for="fcInput">Flight Controller</label>
             <input type="text" id="fcInput" placeholder="Search character name&hellip;" autocomplete="off"
                    role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="fcList">
+            <button type="button" class="combo-toggle" id="fcInputToggle" tabindex="-1" aria-expanded="false" aria-label="Show all flight controllers">&#9662;</button>
             <div class="combo-list" id="fcList" role="listbox" aria-label="Flight controllers"></div>
           </div>
           <div class="field">
@@ -90,9 +95,12 @@
             <label for="capName">Captain's Name</label>
             <input type="text" id="capName" placeholder="e.g. Roger Taylor">
           </div>
-          <div class="field">
+          <div class="field combo" id="capRankCombo">
             <label for="capRank">Captain's Rank</label>
-            <input type="text" id="capRank" placeholder="e.g. Captain">
+            <input type="text" id="capRank" placeholder="Search or type a rank&hellip;" autocomplete="off"
+                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="capRankList">
+            <button type="button" class="combo-toggle" id="capRankToggle" tabindex="-1" aria-expanded="false" aria-label="Show all ranks">&#9662;</button>
+            <div class="combo-list" id="capRankList" role="listbox" aria-label="UCN ranks"></div>
           </div>
         </div>
       </div>
