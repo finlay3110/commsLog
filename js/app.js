@@ -23,6 +23,23 @@ const WARSPITE_QUICK = [
   'FC ADVISED OF REQUEST FOR URGENT SUPPORT'
 ];
 
+/* UCN ranks, junior first — the list is shown in this order, not sorted,
+   because rank order is the useful order. Any other rank can still be typed. */
+const UCN_RANKS = [
+  'Cadet',
+  'Ensign',
+  'Sub Lt',
+  'Lieutenant',
+  'Lt Cmdr',
+  'Commander',
+  'Captain',
+  'Commodore',
+  'Rear Admiral',
+  'Vice Admiral',
+  'Admiral',
+  'Admiral of the Fleet'
+];
+
 /* Known operations from the campaign, name → type. Picking one fills the
    mission type in; any other mission name can still be typed by hand. */
 const OPERATIONS = {
@@ -357,6 +374,9 @@ function switchTab(tab){
 }
 
 /* ---------------- briefing fields ---------------- */
+/* These briefing fields are comboboxes; wireCombo owns their listeners. */
+const COMBO_BRIEFING_KEYS = ['missionName', 'opRank', 'capRank'];
+
 const BRIEFING_FIELD_IDS = {
   opName:'opName', opRank:'opRank', missionName:'missionName', missionType:'missionType',
   shipName:'shipName', date:'missionDate', time:'missionTime', capName:'capName', capRank:'capRank'
@@ -367,7 +387,7 @@ function wireBriefingFields(){
   Object.keys(BRIEFING_FIELD_IDS).forEach(key => {
     const el = document.getElementById(BRIEFING_FIELD_IDS[key]);
     if(key === 'date'){ wireDateField(el); return; }
-    if(key === 'missionName') return;   /* the mission combo wires this one */
+    if(COMBO_BRIEFING_KEYS.includes(key)) return;   /* wired by their comboboxes */
     const onChange = () => {
       state.briefing[key] = el.value;
       saveState();
@@ -426,8 +446,14 @@ function wireCombo(opts){
   const input = document.getElementById(opts.inputId);
   const list = document.getElementById(opts.listId);
   const wrap = document.getElementById(opts.wrapId);
+  const toggle = document.getElementById(opts.inputId + 'Toggle');
   let matches = [];
   let highlight = -1;
+
+  function setExpanded(open){
+    input.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
 
   function syncHighlight(){
     list.querySelectorAll('[data-name]').forEach((el, i) => {
@@ -453,13 +479,13 @@ function wireCombo(opts){
       ).join('');
     }
     list.classList.add('open');
-    input.setAttribute('aria-expanded', 'true');
+    setExpanded(true);
     syncHighlight();
   }
 
   function closeList(){
     list.classList.remove('open');
-    input.setAttribute('aria-expanded', 'false');
+    setExpanded(false);
     input.removeAttribute('aria-activedescendant');
     highlight = -1;
   }
@@ -473,6 +499,17 @@ function wireCombo(opts){
     input.value = name;
     opts.onPick(name);
     closeList();
+  }
+
+  if(toggle){
+    /* mousedown + preventDefault keeps focus in the field, so the arrow
+       browses the list rather than bouncing the caret out of the input. */
+    toggle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      if(list.classList.contains('open')){ closeList(); return; }
+      input.focus();
+      renderList(opts.items());
+    });
   }
 
   input.addEventListener('focus', () => renderList(opts.items()));
@@ -511,7 +548,11 @@ function wireCombo(opts){
     choose(target.dataset.name);
   });
 
-  document.addEventListener('click', (e) => {
+  /* mousedown, not click: opening a list scrolls its highlighted option into
+     view, and if that moves the page between mousedown and mouseup the click
+     lands on an ancestor — which read as "clicked outside" and shut the list
+     again. Worst on the fields lowest down the form. */
+  document.addEventListener('mousedown', (e) => {
     if(!wrap.contains(e.target)) closeList();
   });
 }
@@ -534,6 +575,18 @@ function applyKnownMissionType(name){
   if(!type) return;
   state.briefing.missionType = type;
   document.getElementById('missionType').value = type;
+}
+
+/* Ranks keep their given order — items() does not sort. */
+function wireRankCombo(key, inputId, listId, wrapId){
+  const set = (v) => { state.briefing[key] = v; saveState(); };
+  wireCombo({
+    inputId, listId, wrapId,
+    items: () => UCN_RANKS.slice(),
+    emptyText: 'No matching rank — type any rank',
+    onType: set,
+    onPick: set
+  });
 }
 
 function wireMissionCombo(){
@@ -1150,6 +1203,8 @@ function init(){
   wireBriefingFields();
   wireFcCombo();
   wireMissionCombo();
+  wireRankCombo('opRank', 'opRank', 'opRankList', 'opRankCombo');
+  wireRankCombo('capRank', 'capRank', 'capRankList', 'capRankCombo');
   wireImportInput();
   wireModalDelegation();
   wireEntrySheetDelegation();

@@ -129,6 +129,15 @@ body{
 
 /* searchable combobox */
 .combo{ position:relative; }
+.combo input{ padding-right:34px; }
+.combo-toggle{
+  position:absolute; right:1px; bottom:1px; width:32px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  background:none; border:none; color:var(--text-dim); cursor:pointer;
+  font-size:11px; line-height:1; transition:transform 0.15s, color 0.15s;
+}
+.combo-toggle:hover{ color:var(--orange-2); }
+.combo-toggle[aria-expanded="true"]{ color:var(--orange); transform:rotate(180deg); }
 .combo-list{
   position:absolute; z-index:50; top:calc(100% + 4px); left:0; right:0;
   max-height:220px; overflow-y:auto; background:var(--navy-2); border:1px solid var(--orange);
