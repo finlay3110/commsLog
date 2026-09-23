@@ -23,6 +23,43 @@ const WARSPITE_QUICK = [
   'FC ADVISED OF REQUEST FOR URGENT SUPPORT'
 ];
 
+/* Known operations from the campaign, name → type. Picking one fills the
+   mission type in; any other mission name can still be typed by hand. */
+const OPERATIONS = {
+  'OPERATION TEDDER': 'Military',
+  'ITHAKA MINING FACILITY': 'Military',
+  'OPERATION ALCHEMIST': 'Military',
+  'OPERATION CLAYMORE': 'Military',
+  'OPERATION COPIAPO': 'Military',
+  'OPERATION HANUMAN': 'Military',
+  'OPERATION MENDICANT': 'Military',
+  'OPERATION QUICKSTEP': 'Military',
+  'OPERATION SILK ROAD': 'Military',
+  'OPERATION TECUMSEH': 'Military',
+  'OPERATION VIA MARIS': 'Military',
+  'OPERATION AMUNDSEN': 'Exploration',
+  'OPERATION OBELISK': 'Exploration',
+  'OPERATION SARGASSO': 'Exploration',
+  'OPERATION ADAMAN': 'Exploration',
+  'OPERATION MARCONI': 'Exploration',
+  'OPERATION SISTEMA': 'Exploration',
+  'OPERATION VANGUARD': 'Exploration',
+  'OPERATION REDENTOR': 'Diplomacy',
+  'OPERATION BARATARIA': 'Diplomacy',
+  'OPERATION CLARITY': 'Diplomacy',
+  'OPERATION KISMET': 'Diplomacy',
+  'OPERATION PHILBY': 'Diplomacy',
+  'OPERATION PITCHFORK': 'Diplomacy',
+  'TERRA NOVAN DIPLOMATIC INCIDENT': 'Diplomacy',
+  'OPERATION ANTIMONY': 'Intrigue',
+  'OPERATION CAMINO': 'Intrigue',
+  'OPERATION EURYDICE': 'Intrigue',
+  'OPERATION MOCKINGBIRD': 'Intrigue',
+  'OPERATION TELEGRAM': 'Intrigue',
+  'OPERATION ARGUS': 'Intrigue',
+  'OPERATION RECOIL': 'Intrigue'
+};
+
 const STORAGE_KEY = 'ucnCommsLogState_v1';
 const INTRO_SEEN_KEY = 'ucnCommsLogIntroSeen_v1';
 
@@ -125,7 +162,7 @@ function entrySort(a, b){
 /* ---------------- state ---------------- */
 function defaultBriefing(){
   return {
-    opName:'', opRank:'', missionName:'', shipName:'', fc:'', date: todayISO(), time: nowHHMM(),
+    opName:'', opRank:'', missionName:'', missionType:'', shipName:'', fc:'', date: todayISO(), time: nowHHMM(),
     capName:'', capRank:''
   };
 }
@@ -321,8 +358,8 @@ function switchTab(tab){
 
 /* ---------------- briefing fields ---------------- */
 const BRIEFING_FIELD_IDS = {
-  opName:'opName', opRank:'opRank', missionName:'missionName', shipName:'shipName',
-  date:'missionDate', time:'missionTime', capName:'capName', capRank:'capRank'
+  opName:'opName', opRank:'opRank', missionName:'missionName', missionType:'missionType',
+  shipName:'shipName', date:'missionDate', time:'missionTime', capName:'capName', capRank:'capRank'
 };
 
 /* Listeners are attached exactly once, at init. */
@@ -330,6 +367,7 @@ function wireBriefingFields(){
   Object.keys(BRIEFING_FIELD_IDS).forEach(key => {
     const el = document.getElementById(BRIEFING_FIELD_IDS[key]);
     if(key === 'date'){ wireDateField(el); return; }
+    if(key === 'missionName') return;   /* the mission combo wires this one */
     const onChange = () => {
       state.briefing[key] = el.value;
       saveState();
@@ -380,22 +418,38 @@ function applyStateToUi(){
   document.getElementById('fcInput').value = state.briefing.fc || '';
 }
 
-/* ---------------- flight controller combobox ---------------- */
-let fcMatches = [];
-let fcHighlight = -1;
+/* ---------------- comboboxes ----------------
+   One implementation, used by the flight-controller and mission-name
+   fields. Free text is always allowed: the list filters as you type and
+   nothing forces a pick. */
+function wireCombo(opts){
+  const input = document.getElementById(opts.inputId);
+  const list = document.getElementById(opts.listId);
+  const wrap = document.getElementById(opts.wrapId);
+  let matches = [];
+  let highlight = -1;
 
-function wireFcCombo(){
-  const input = document.getElementById('fcInput');
-  const list = document.getElementById('fcList');
+  function syncHighlight(){
+    list.querySelectorAll('[data-name]').forEach((el, i) => {
+      const on = i === highlight;
+      el.classList.toggle('hi', on);
+      el.setAttribute('aria-selected', on ? 'true' : 'false');
+      if(on){
+        input.setAttribute('aria-activedescendant', el.id);
+        if(typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
 
   function renderList(items){
-    fcMatches = items;
-    fcHighlight = items.length ? 0 : -1;
+    matches = items;
+    highlight = items.length ? 0 : -1;
     if(items.length === 0){
-      list.innerHTML = '<div class="none">No matching character</div>';
+      list.innerHTML = `<div class="none">${escapeHtml(opts.emptyText)}</div>`;
     } else {
       list.innerHTML = items.map((name, i) =>
-        `<div role="option" id="fcOpt-${i}" aria-selected="${i === 0 ? 'true' : 'false'}" class="${i === 0 ? 'hi' : ''}" data-name="${escapeHtml(name)}">${escapeHtml(name)}</div>`
+        `<div role="option" id="${opts.inputId}Opt-${i}" aria-selected="false" data-name="${escapeHtml(name)}">` +
+        `${escapeHtml(name)}${opts.noteFor ? `<span class="combo-note">${escapeHtml(opts.noteFor(name))}</span>` : ''}</div>`
       ).join('');
     }
     list.classList.add('open');
@@ -407,49 +461,43 @@ function wireFcCombo(){
     list.classList.remove('open');
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
-    fcHighlight = -1;
+    highlight = -1;
   }
 
-  function syncHighlight(){
-    const opts = list.querySelectorAll('[data-name]');
-    opts.forEach((el, i) => {
-      const on = i === fcHighlight;
-      el.classList.toggle('hi', on);
-      el.setAttribute('aria-selected', on ? 'true' : 'false');
-      if(on){
-        input.setAttribute('aria-activedescendant', el.id);
-        if(typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
-      }
-    });
+  function filtered(){
+    const q = input.value.trim().toLowerCase();
+    return opts.items().filter(n => n.toLowerCase().includes(q));
   }
 
   function choose(name){
     input.value = name;
-    state.briefing.fc = name;
-    saveState();
+    opts.onPick(name);
     closeList();
   }
 
-  input.addEventListener('focus', () => renderList(UCN_CAST.slice().sort()));
+  input.addEventListener('focus', () => renderList(opts.items()));
+  /* Clicking an already-focused field fires no focus event, so without this
+     the list can't be reopened after a pick without blurring first. */
+  input.addEventListener('click', () => {
+    if(!list.classList.contains('open')) renderList(opts.items());
+  });
   input.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
-    renderList(UCN_CAST.filter(n => n.toLowerCase().includes(q)).sort());
-    state.briefing.fc = input.value;
-    saveState();
+    renderList(filtered());
+    opts.onType(input.value);
   });
 
   input.addEventListener('keydown', (e) => {
     const open = list.classList.contains('open');
     if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
-      if(!open){ renderList(UCN_CAST.slice().sort()); return; }
-      if(!fcMatches.length) return;
+      if(!open){ renderList(opts.items()); return; }
+      if(!matches.length) return;
       e.preventDefault();
-      fcHighlight = (fcHighlight + (e.key === 'ArrowDown' ? 1 : -1) + fcMatches.length) % fcMatches.length;
+      highlight = (highlight + (e.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
       syncHighlight();
     } else if(e.key === 'Enter'){
-      if(open && fcHighlight >= 0 && fcMatches[fcHighlight]){
+      if(open && highlight >= 0 && matches[highlight]){
         e.preventDefault();
-        choose(fcMatches[fcHighlight]);
+        choose(matches[highlight]);
       }
     } else if(e.key === 'Escape'){
       if(open){ e.stopPropagation(); closeList(); }
@@ -464,7 +512,43 @@ function wireFcCombo(){
   });
 
   document.addEventListener('click', (e) => {
-    if(!document.getElementById('fcCombo').contains(e.target)) closeList();
+    if(!wrap.contains(e.target)) closeList();
+  });
+}
+
+function wireFcCombo(){
+  wireCombo({
+    inputId: 'fcInput', listId: 'fcList', wrapId: 'fcCombo',
+    items: () => UCN_CAST.slice().sort(),
+    emptyText: 'No matching character',
+    onType: v => { state.briefing.fc = v; saveState(); },
+    onPick: v => { state.briefing.fc = v; saveState(); }
+  });
+}
+
+/* A known operation carries its type, so picking one fills the type in.
+   A mission that isn't on the list leaves the type alone for the operative
+   to set. */
+function applyKnownMissionType(name){
+  const type = OPERATIONS[String(name || '').trim().toUpperCase()];
+  if(!type) return;
+  state.briefing.missionType = type;
+  document.getElementById('missionType').value = type;
+}
+
+function wireMissionCombo(){
+  const setName = (v) => {
+    state.briefing.missionName = v;
+    applyKnownMissionType(v);
+    saveState();
+  };
+  wireCombo({
+    inputId: 'missionName', listId: 'missionList', wrapId: 'missionCombo',
+    items: () => Object.keys(OPERATIONS).sort(),
+    emptyText: 'No matching operation — type any mission name',
+    noteFor: name => OPERATIONS[name] || '',
+    onType: setName,
+    onPick: setName
   });
 }
 
@@ -1065,6 +1149,7 @@ function init(){
   const savedAt = restoreSavedState();
   wireBriefingFields();
   wireFcCombo();
+  wireMissionCombo();
   wireImportInput();
   wireModalDelegation();
   wireEntrySheetDelegation();

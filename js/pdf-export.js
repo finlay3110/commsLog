@@ -198,6 +198,7 @@ function buildCoverPage(doc, fonts, meta){
   const rows = [
     ['OPERATIVE', joinNameRank(meta.opName, meta.opRank)],
     ['MISSION NAME', meta.missionName || '—'],
+    ['MISSION TYPE', meta.missionType || '—'],
     ['SHIP', meta.shipName || '—'],
     ['FLIGHT CONTROLLER', meta.fc || '—'],
     ['DATE', isoToDisplay(meta.date) || '—'],
